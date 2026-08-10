@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 
-app.use("/home", (req, res) => {
+app.use("/", (req, res) => {
   res.send("Hello from home");
 });
 
