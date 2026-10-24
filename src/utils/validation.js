@@ -35,7 +35,25 @@ const validateLoginData = async (req, user, res) => {
   }
 };
 
+const validateProfileData = (req) => {
+  const allowedEditFields = [
+    "firstName",
+    "lastName",
+    "emailId",
+    "age",
+    "gender",
+    "photoUrl",
+    "about",
+    "skills",
+  ];
+  const isValidOperation = Object.keys(req.body).every((update) => {
+    return allowedEditFields.includes(update);
+  });
+  return isValidOperation;
+};
+
 module.exports = {
   validateSignUpData,
   validateLoginData,
+  validateProfileData,
 };
