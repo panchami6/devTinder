@@ -4,6 +4,7 @@ const { userAuth } = require("../middlewares/auth");
 const ConnectionRequestModel = require("../models/connectonRequest");
 const User = require("../models/user");
 
+//api to send a connection request from one user to another
 requestsRouter.post(
   "/request/send/:status/:toUserId",
   userAuth,
@@ -48,6 +49,45 @@ requestsRouter.post(
       });
     } catch (error) {
       res.status(400).send("Error sending the request:" + error.message);
+    }
+  },
+);
+
+//api to review a connection request from one user to another
+requestsRouter.post(
+  "/request/review/:status/:fromUserId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.user;
+      const fromUserId = req.params.fromUserId;
+      const status = req.params.status;
+      const allowedStatuses = ["accepted", "rejected"];
+
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).send("Invalid status");
+      }
+
+      //check if a request exists from the fromUserId to the logged in user and status should be interested
+      const connectionRequest = await ConnectionRequestModel.findOne({
+        fromUserId,
+        toUserId: loggedInUser._id,
+        status: "interested",
+      });
+
+      if (!connectionRequest) {
+        return res.status(404).send("Request not found");
+      }
+
+      connectionRequest.status = status;
+      await connectionRequest.save();
+
+      res.status(200).json({
+        message: `Connection request ${status} successfully`,
+        data: connectionRequest,
+      });
+    } catch (error) {
+      res.status(400).send("Error reviewing the request:" + error.message);
     }
   },
 );
